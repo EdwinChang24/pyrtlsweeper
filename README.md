@@ -7,6 +7,9 @@
     </a>
 </p>
 
+**Check out the
+paper: [PyRTLSweeper: An attempt at automated transpilation of digital circuits to Minesweeper boards](https://edwinchang.dev/files/pyrtlsweeper.pdf)**
+
 PyRTLSweeper is a Python package that takes a circuit written with [PyRTL](https://ucsbarchlab.github.io/PyRTL/) and
 produces a Minesweeper board readable by [JSMinesweeper](https://davidnhill.github.io/JSMinesweeper/) that represents
 the circuit. The player can designate input cells to be flagged or not flagged, and some output cells are determined to

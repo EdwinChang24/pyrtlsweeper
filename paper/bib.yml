@@ -1,0 +1,50 @@
+ms-in-ms:
+  type: article
+  title: Building Minesweeper in Minesweeper
+  author: ["Kirby703"]
+  date: 2025-03-28
+  parent:
+    type: proceedings
+    title: SIGBOVIK 2025
+    date: 2024-04-04
+    location: Carnegie Mellon University, Pittsburgh, PA
+    organization: Association for Computational Heresy
+    url: https://sigbovik.org/2025/proceedings.pdf
+np-complete:
+  type: article
+  title: Minesweeper is NP-complete
+  author: ["Richard Kaye"]
+  date: 2000
+  parent:
+    type: periodical
+    title: The Mathematical Intelligencer
+    volume: 22
+    issue: 2
+    date: 2000
+    publisher:
+      name: Springer-Verlag New York
+some-configs:
+  type: article
+  title: Some Minesweeper Configurations
+  author: ["Richard Kaye"]
+  date: 2007-05-31
+  organization: School of Mathematics, University of Birmingham
+  location: Birmingham
+  url: https://web.archive.org/web/20231102222553/https://web.mat.bham.ac.uk/R.W.Kaye/minesw/minesw.pdf
+comp-complexity:
+  type: article
+  title: The computational complexity of Minesweeper
+  author: ["Michiel de Bondt"]
+  date: 2024-11-27
+  organization: Radboud University
+  location: Nijmegen, The Netherlands
+  serial-number:
+    arxiv: 1204.4659v1
+hexagonal:
+  type: article
+  title: A Short Note on Improved Logic Circuits in a Hexagonal Minesweeper
+  author: ["Seunghoon Lee"]
+  date: 2021-11-14
+  organization: Department of Mathematics, Seoul National University
+  serial-number:
+    arxiv: 1602.00398v1
