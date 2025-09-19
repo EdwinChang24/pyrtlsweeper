@@ -3,7 +3,7 @@ from abc import abstractmethod, ABC
 
 class _CircuitComponent(ABC):
     """
-    A circuit component (logic gate or wire section) that can be placed on a Minesweeper board. Generally has a height of 3 cells and a width that is a multiple of 3 cells.
+    A circuit component (logic gate or wire section) that can be placed on a Minesweeper board. Generally has a size that is a multiple of 3x3.
     """
 
     @abstractmethod
@@ -24,24 +24,9 @@ class _CircuitComponent(ABC):
         pass
 
 
-class _LogicGate(_CircuitComponent, ABC):
-    """
-    A logic gate that can be placed on a Minesweeper board.
-    There may be any number of inputs and exactly one output.
-    All inputs come from the left and are spaced by 3 cells, and the output is at the bottom exiting towards the right.
-    The height of the logic gate is determined by the number of inputs.
-    """
-
-    @abstractmethod
-    def metadata(self) -> tuple[int, int]:
-        """
-        :return: The metadata for this logic gate in the format (number of inputs, width).
-        The width is the number of 3-cell blocks taken by this logic gate.
-        """
-        pass
-
-
 class _WireHorizontal(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r + 1][c] = "H"
@@ -49,6 +34,8 @@ class _WireHorizontal(_CircuitComponent):
 
 
 class _WireVertical(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r][c + 1] = "H"
@@ -56,24 +43,32 @@ class _WireVertical(_CircuitComponent):
 
 
 class _CapLeft(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r + 1][c + 2] = "H"
 
 
 class _CapRight(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r + 1][c] = "H"
 
 
 class _TurnLeftDown(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r + 1][c] = "H"
 
 
 class _TurnLeftUp(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r][c + 1] = "H"
@@ -82,6 +77,8 @@ class _TurnLeftUp(_CircuitComponent):
 
 
 class _TurnRightUp(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r][c + 1] = "H"
@@ -90,12 +87,16 @@ class _TurnRightUp(_CircuitComponent):
 
 
 class _TurnRightDown(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r + 1][c + 2] = "H"
 
 
 class _Crossover(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r][c + 1] = "H"
@@ -105,50 +106,87 @@ class _Crossover(_CircuitComponent):
 
 
 class _Split(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r][c + 2] = "H"
         board[r + 1][c] = "H"
 
 
-class _NotGate(_LogicGate):
-    def metadata(self) -> tuple[int, int]:
-        return 1, 1
+class _NotGate(_CircuitComponent):
+    """
+    Size in 3x3: height 1, width 4
+    The inverter is placed at either the front or the back (putting it in the middle causes collisions with adjacent and gates).
+
+    :param offset: If true, the inverter is placed at the end of the 1x4 instead of the front. This is to prevent collisions between not gates placed next to each other.
+    """
+    offset: bool
+
+    def __init__(self, offset: bool):
+        self.offset = offset
 
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
-        board[r][c + 1] = "H"
-        board[r + 1][c + 1] = "F"
-        board[r + 2][c + 1] = "H"
+        wh = _WireHorizontal()
+        if self.offset:
+            # wires
+            wh.place(board, coords)
+            wh.place(board, (r, c + 3))
+            wh.place(board, (r, c + 6))
+            # inverter
+            board[r][c + 10] = "H"
+            board[r + 2][c + 10] = "H"
+            board[r + 1][c + 10] = "F"
+
+        else:
+            # inverter
+            board[r][c + 1] = "H"
+            board[r + 2][c + 1] = "H"
+            board[r + 1][c + 1] = "F"
+            # wires
+            wh.place(board, (r, c + 3))
+            wh.place(board, (r, c + 6))
+            wh.place(board, (r, c + 9))
 
 
-class _AndGate(_LogicGate):
-    def metadata(self) -> tuple[int, int]:
-        return 2, 4
+class _AndGate(_CircuitComponent):
+    """
+    Size in 3x3: height 2, width 4
+    Has some extra flags in place to avoid collision with adjacent not gates.
+    """
 
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
-        hidden = [(1, 0), (7, 0), (3, 1), (5, 1), (3, 3), (5, 3), (2, 5), (2, 6), (7, 5), (8, 6), (1, 8), (1, 9),
-                  (4, 8), (4, 9), (5, 8), (5, 9), (8, 8), (7, 9), (0, 11), (2, 11), (7, 11)]
-        flagged = [(4, 0), (4, 1), (2, 2), (3, 2), (5, 2), (6, 2), (4, 3), (4, 4), (3, 7), (3, 8), (3, 9), (0, 10)]
-        opened = [(6, 8), (6, 9)]
-        for h in hidden:
-            board[r + h[0]][c + h[1]] = "H"
-        for f in flagged:
-            board[r + f[0]][c + f[1]] = "F"
-        for o in opened:
-            board[r + o[0]][c + o[1]] = "O"
+        rows = [
+            " F       FFF",
+            "H F  H H  H ",
+            "FH HF    HH ",
+            "FH H H   OF ",
+            "H F HH H H H",
+            " F       F  "
+        ]
+        for row_i, row in enumerate(rows):
+            for col_i, col in enumerate(row):
+                if rows[row_i][col_i] == " ":
+                    continue
+                else:
+                    board[r + row_i][c + col_i] = rows[row_i][col_i]
 
 
-class _NopGate(_LogicGate):
-    def metadata(self) -> tuple[int, int]:
-        return 1, 0
+class _NopGate(_CircuitComponent):
+    """Size in 3x3: height 1, width 4"""
 
     def place(self, board: list[list[str]], coords: tuple[int, int]):
-        pass
+        r, c = coords
+        wh = _WireHorizontal()
+        for i in range(4):
+            wh.place(board, (r, c + i * 3))
 
 
 class _Const1(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r][c] = "H"
@@ -157,6 +195,8 @@ class _Const1(_CircuitComponent):
 
 
 class _Const0(_CircuitComponent):
+    """Size: 3x3"""
+
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
         board[r][c] = "H"
