@@ -4,7 +4,7 @@ import pyrtl
 
 from and_not_loop.components import _Crossover, _LogicGate, _AndGate, _NotGate, _NopGate, _Split, _WireHorizontal, \
     _WireVertical, _TurnLeftDown, _TurnLeftUp, _TurnRightUp, _TurnRightDown, _Const0, _Const1, _CapLeft, _CapRight
-from pyrtlsweeper.logging import _log
+from pyrtlsweeper.logging_ import _log
 
 
 def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()):

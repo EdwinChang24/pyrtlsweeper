@@ -1,12 +1,12 @@
 [project]
 name = "pyrtlsweeper"
-version = "0.1.0"
+version = "1.0.0"
 readme = "README.md"
 authors = [{ name = "Edwin Chang" }]
 requires-python = ">=3.13"
 dependencies = [
     "hatchling>=1.27.0",
-    "pyrtl>=0.11.2",
+    "pyrtl>=0.12",
 ]
 
 [build-system]
