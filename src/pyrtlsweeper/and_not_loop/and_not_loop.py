@@ -91,7 +91,7 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
     """
     Grid in 3x for laying out the components. Valid components:
     - space: empty
-    - -,|,r,L,J,\,+,T,(,): wiring
+    - -,|,r,L,J,\\,+,T,(,): wiring
     - 1,0: consts
     - &,~,!,w: gates (! means Not gate with offset)
     """
