@@ -4,7 +4,8 @@ from io import TextIOWrapper
 import pyrtl
 
 from and_not_loop.components import _Crossover, _Split, _WireHorizontal, \
-    _WireVertical, _TurnLeftDown, _TurnLeftUp, _TurnRightUp, _TurnRightDown, _Const0, _Const1, _CapLeft, _CapRight
+    _WireVertical, _TurnLeftDown, _TurnLeftUp, _TurnRightUp, _TurnRightDown, _Const0, _Const1, _CapLeft, _CapRight, \
+    _CircuitComponent, _AndGate, _NotGate, _NopGate
 from pyrtlsweeper.logging_ import _log, _error
 
 GATES_WIDTH = 4
@@ -98,11 +99,11 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
     wire_count = total_io_logic_height - len(input_wires)
     """The total number of wires looping around"""
 
-    # draw inputs
+    _log("drawing inputs")
     for input_index in range(len(input_wires)):
         wiring_grid[input_index][wire_count + GATES_WIDTH - 1] = "("
 
-    # draw gates
+    _log("drawing gates")
     for logic_net_index, logic_net in enumerate(logic_nets):
         if logic_net.op in ["&", "w"]:
             wiring_grid[heights[logic_net]][wire_count] = logic_net.op
@@ -111,11 +112,11 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
         else:
             _error(f"unsupported logic op {logic_net.op}")
 
-    # draw outputs
+    _log("drawing outputs")
     for output_net in output_nets:
         wiring_grid[heights[output_net]][wire_count] = ")"
 
-    # draw wires looping around
+    _log("drawing looping wires")
     for wire_index in range(wire_count):
         # horizontal segment going into left side of gate
         for i in range(wire_index):
@@ -136,8 +137,7 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
         for i in range(wire_index):
             wiring_grid[total_io_logic_height + i][wire_count + GATES_WIDTH + wire_index] = "|"
 
-    # draw wires specifying src-sink connections
-    # and consts
+    _log("drawing src-sink connections and consts")
     for sink, srcs in net_src_dict.items():
         column_of_first_src = wire_count * 2 + GATES_WIDTH + len(input_wires) - heights[sink] - 1
         for src_index, src in enumerate(srcs):
@@ -174,50 +174,51 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
                    + [[" "] + grid_row + [" "] for grid_row in wiring_grid]
                    + [" " for _ in range(len(wiring_grid[0]) + 2)])
 
-    actual_grid = [[" " for _ in range(total_grid_width * 3)] for _ in range(total_grid_height * 3)]
-    for row_i, row in enumerate(wiring_grid):
-        for col_i, cell in enumerate(row):
-            if cell:
-                new_coords = (row_i * 3, col_i * 3)
-                if wiring_grid[row_i - 1][col_i] and wiring_grid[row_i + 1][col_i] and wiring_grid[row_i][col_i - 1] and \
-                    wiring_grid[row_i][col_i + 1]:
-                    _Crossover().place(actual_grid, new_coords)
-                elif wiring_grid[row_i + 1][col_i] and wiring_grid[row_i][col_i - 1] and wiring_grid[row_i][col_i + 1]:
-                    _Split().place(actual_grid, new_coords)
-                elif wiring_grid[row_i][col_i - 1] and wiring_grid[row_i + 1][col_i]:
-                    _TurnLeftDown().place(actual_grid, new_coords)
-                elif wiring_grid[row_i][col_i - 1] and wiring_grid[row_i - 1][col_i]:
-                    _TurnLeftUp().place(actual_grid, new_coords)
-                elif wiring_grid[row_i][col_i + 1] and wiring_grid[row_i - 1][col_i]:
-                    _TurnRightUp().place(actual_grid, new_coords)
-                elif wiring_grid[row_i][col_i + 1] and wiring_grid[row_i + 1][col_i]:
-                    _TurnRightDown().place(actual_grid, new_coords)
-                elif wiring_grid[row_i][col_i - 1] or wiring_grid[row_i][col_i + 1]:
-                    _WireHorizontal().place(actual_grid, new_coords)
-                elif wiring_grid[row_i - 1][col_i] or wiring_grid[row_i + 1][col_i]:
-                    _WireVertical().place(actual_grid, new_coords)
-    for i in range(len(input_wires)):
-        for j in range(gates_width):
-            _CapLeft().place(actual_grid, (i * 6 + 3, below_gates_bottom_left[1] * 3 - 3))
-            _WireHorizontal().place(actual_grid, (i * 6 + 3, below_gates_bottom_left[1] * 3 + j * 3))
-    placing_gate_height = len(input_wires) * 6 + 3
-    for gate in logic_gates:
-        gate.place(actual_grid, (placing_gate_height, below_gates_bottom_left[1] * 3))
-        for j in range(gate.metadata()[1], gates_width):
-            _WireHorizontal().place(actual_grid, (placing_gate_height + gate.metadata()[0] * 6 - 6,
-                                                  below_gates_bottom_left[1] * 3 + j * 3))
-        placing_gate_height += gate.metadata()[0] * 6
-    output_cap_height = 1
-    for gate_i in range(len(output_wires)):
-        gate_height = logic_gates[-gate_i].metadata()[0]
-        _CapRight().place(actual_grid, (below_gates_bottom_left[0] * 3 - 6 * output_cap_height,
-                                        below_gates_bottom_left[1] * 3 + gates_width * 3))
-        output_cap_height += gate_height
-    for const_height, one in consts:
-        (_Const1() if one else _Const0()).place(actual_grid, (below_gates_bottom_left[0] * 3 - 3,
-                                                              below_gates_bottom_left[1] * 3 + gates_width * 3 + (
-                                                                  below_gates_bottom_left[0] - (
-                                                                  const_height + 1)) * 3 - 3))
+    _log("converting to actual grid")
+
+    actual_grid = [[" " for _ in range(len(wiring_grid[0]) * 3)] for _ in range(len(wiring_grid) * 3)]
+    for row_index, row in enumerate(wiring_grid):
+        for col_index, cell in enumerate(row):
+            if cell != " ":
+                component: _CircuitComponent | None = None
+                match cell:
+                    case "-":
+                        component = _WireHorizontal()
+                    case "|":
+                        component = _WireVertical()
+                    case "r":
+                        component = _TurnRightDown()
+                    case "L":
+                        component = _TurnRightUp()
+                    case "J":
+                        component = _TurnLeftUp()
+                    case "\\":
+                        component = _TurnLeftDown()
+                    case "+":
+                        component = _Crossover()
+                    case "T":
+                        component = _Split()
+                    case "(":
+                        component = _CapLeft()
+                    case ")":
+                        component = _CapRight()
+                    case "1":
+                        component = _Const1()
+                    case "0":
+                        component = _Const0()
+                    case "&":
+                        component = _AndGate()
+                    case "~":
+                        component = _NotGate(offset=False)
+                    case "!":
+                        component = _NotGate(offset=True)
+                    case "w":
+                        component = _NopGate()
+                if component is not None:
+                    component.place(actual_grid, (row_index * 3, col_index * 3))
+                else:
+                    _error(f"unrecognized circuit component {cell}")
+
     _log("running flag pass")
     for row_i, row in enumerate(actual_grid):
         for col_i, cell in enumerate(row):
