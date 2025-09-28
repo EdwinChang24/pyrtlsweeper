@@ -1,10 +1,14 @@
+import typing
 from io import TextIOWrapper
 
 import pyrtl
 
-from and_not_loop.components import _Crossover, _LogicGate, _AndGate, _NotGate, _NopGate, _Split, _WireHorizontal, \
+from and_not_loop.components import _Crossover, _Split, _WireHorizontal, \
     _WireVertical, _TurnLeftDown, _TurnLeftUp, _TurnRightUp, _TurnRightDown, _Const0, _Const1, _CapLeft, _CapRight
-from pyrtlsweeper.logging_ import _log
+from pyrtlsweeper.logging_ import _log, _error
+
+GATES_WIDTH = 4
+"""Width in 3x of the gates block"""
 
 
 def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()):
@@ -22,50 +26,40 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
     pyrtl.passes.optimize(update_working_block=False, block=post_synth)
     # wire_src_dict: [wire] = logic net powering wire
     # wire_sink_dict: [wire] = logic nets taking wire as arg
-    # logic: set of logic nets with arg and dest wires
     wire_src_dict, wire_sink_dict = post_synth.net_connections()
-    inputs: list[tuple[pyrtl.Input, list[pyrtl.Input]]] = []
     input_wires: list[pyrtl.Input] = []
-    outputs: list[tuple[pyrtl.Output, list[pyrtl.Output]]] = []
     output_wires: list[pyrtl.Output] = []
     for original_io in post_synth.io_map.keys():
         if isinstance(original_io, pyrtl.Input):
-            inputs.append((original_io, post_synth.io_map[original_io]))
-            input_wires.extend(post_synth.io_map[original_io])
+            input_wires.extend(typing.cast(list[pyrtl.Input], post_synth.io_map[original_io]))
         if isinstance(original_io, pyrtl.Output):
-            outputs.append((original_io, post_synth.io_map[original_io]))
-            output_wires.extend(post_synth.io_map[original_io])
+            output_wires.extend(typing.cast(list[pyrtl.Output], post_synth.io_map[original_io]))
+    if not output_wires:
+        _error("no output wires found. this is not supported")
     _log(f"{output_wires = }")
-    # create the list of logic nets in the correct order
-    logic: set[pyrtl.LogicNet] = post_synth.logic
-    new_logic_order: list[pyrtl.LogicNet] = []
-    # add all nets without an output as a dest to the list
-    for net in logic:
-        found_output = False
-        for dest in net.dests:
-            if isinstance(dest, pyrtl.Output):
-                found_output = True
-                break
-        if not found_output:
-            new_logic_order.append(net)
-    # add all nets with an output as a dest to the list
-    output_nets: list[pyrtl.LogicNet] = []
-    for net in logic:
-        found_output = False
-        for dest in net.dests:
-            if isinstance(dest, pyrtl.Output):
-                found_output = True
-                break
-        if found_output:
-            output_nets.append(net)
-    output_nets.sort(key=lambda n: list(map(lambda w: w.name, output_wires)).index(n.dests[0].name))
-    new_logic_order.extend(output_nets)
-    _log(f"{new_logic_order = }")
-    # new_logic_order has all the non-output nets followed by the sorted output nets
 
-    # construct map of logic net -> ordered list of logic nets whose outputs are inputs to the logic net
+    # create the list of logic nets in the correct order
+    all_nets = list(post_synth.logic)
+
+    # partition nets into logic vs. outputs
+    logic_nets: list[pyrtl.LogicNet] = []
+    output_nets: list[pyrtl.LogicNet] = []
+    for net in all_nets:
+        if any(isinstance(dest, pyrtl.Output) for dest in net.dests):
+            if net.op != "w":
+                _error(
+                    f"logic net {net} has an output as a destination but has an op other than w. this is not supported")
+            output_nets.append(net)
+        else:
+            logic_nets.append(net)
+    # sort output_nets to match output_wires
+    output_nets.sort(key=lambda n: list(map(lambda w: w.name, output_wires)).index(n.dests[0].name))
+    _log(f"{logic_nets = }")
+
     net_src_dict: dict[pyrtl.LogicNet, list[pyrtl.LogicNet | pyrtl.Input | pyrtl.Const]] = {}
-    for net in logic:
+    """Map of logic/output net -> ordered list of nets, inputs, or consts whose outputs are inputs to this net"""
+
+    for net in all_nets:
         srcs: list[pyrtl.LogicNet | pyrtl.Input | pyrtl.Const] = []
         for arg in net.args:
             if isinstance(arg, pyrtl.Input) or isinstance(arg, pyrtl.Const):
@@ -74,60 +68,112 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
                 srcs.append(wire_src_dict[arg])
         net_src_dict[net] = srcs
     _log(f"{net_src_dict = }")
-    # create the map of logic net to coordinate positions in 3x
-    # and the list of LogicGates
-    logic_gates: list[_LogicGate] = []
-    heights: dict[pyrtl.LogicNet, int] = {}
-    curr_height = len(input_wires) * 2
-    for net in new_logic_order:
-        if net.op == "&":
-            logic_gates.append(_AndGate())
-        elif net.op == "~":
-            logic_gates.append(_NotGate())
-        elif net.op == "w":
-            logic_gates.append(_NopGate())
+
+    heights: dict[pyrtl.LogicNet | pyrtl.Input, int] = {}
+    """Maps an input, logic net, or output to its vertical coordinate position in 3x"""
+
+    curr_height = 0
+    for wire in input_wires:
+        heights[wire] = curr_height
+        curr_height += 1
+    for net in logic_nets:
         heights[net] = curr_height
-        curr_height += logic_gates[len(logic_gates) - 1].metadata()[0] * 2
-    connections: list[tuple[int, int]] = []  # src height, sink height
-    consts: list[tuple[int, bool]] = []
-    for sink_net, srcs in net_src_dict.items():
-        for i, src in enumerate(srcs):
-            if isinstance(src, pyrtl.LogicNet):
-                gate: _LogicGate
-                if src.op == "&":
-                    gate = _AndGate()
-                elif src.op == "~":
-                    gate = _NotGate()
-                else:
-                    gate = _NopGate()
-                connections.append((heights[src] + gate.metadata()[0] * 2 - 2, heights[sink_net] + 2 * i))
-            elif isinstance(src, pyrtl.Input):
-                connections.append(
-                    (list(map(lambda w: w.name, input_wires)).index(src.name) * 2, heights[sink_net] + 2 * i))
-            elif isinstance(src, pyrtl.Const):
-                consts.append((heights[sink_net] + 2 * i, src.val == 1))
-    _log(f"{consts = }")
-    total_grid_height = curr_height * 2 - (len(input_wires) * 2) + 1
-    gates_width = max(logic_gates, key=lambda g: g.metadata()[1]).metadata()[1]
-    total_grid_width = gates_width + (2 * (curr_height - len(input_wires) * 2)) + 2
-    wiring_grid = [[False for _ in range(total_grid_width)] for _ in range(total_grid_height)]
-    below_gates_bottom_left = (curr_height + 1, curr_height - len(input_wires) * 2 + 1)
-    for i in range(len(input_wires) * 2 + 1, below_gates_bottom_left[0], 2):
-        for j in range(1, below_gates_bottom_left[0] - i + 1):
-            wiring_grid[i][below_gates_bottom_left[1] - j] = True
-        for i1 in range(0, (below_gates_bottom_left[0] - i) * 2 - 1):
-            wiring_grid[i + i1][below_gates_bottom_left[1] - (below_gates_bottom_left[0] - i)] = True
-        for j in range(below_gates_bottom_left[1] - (below_gates_bottom_left[0] - i),
-                       below_gates_bottom_left[1] + gates_width + below_gates_bottom_left[0] - i):
-            wiring_grid[below_gates_bottom_left[0] * 2 - i - 2][j] = True
-        for i1 in range(below_gates_bottom_left[0], below_gates_bottom_left[0] * 2 - i - 1):
-            wiring_grid[i1][below_gates_bottom_left[1] + gates_width + below_gates_bottom_left[0] - i - 1] = True
-    for src_height, sink_height in connections:
-        for j in range(below_gates_bottom_left[1] + gates_width,
-                       below_gates_bottom_left[1] + gates_width + curr_height - sink_height):
-            wiring_grid[src_height + 1][j] = True
-        for i in range(src_height + 1, below_gates_bottom_left[0] + 1):
-            wiring_grid[i][below_gates_bottom_left[1] + gates_width + curr_height - sink_height - 1] = True
+        curr_height += 2 if net.op == "&" else 1
+    for net in output_nets:
+        heights[net] = curr_height
+        curr_height += 1
+    total_io_logic_height = curr_height
+    """The height in 3x of the inputs, logic nets, and outputs combined"""
+
+    wiring_grid = [[" " for _ in range((total_io_logic_height - len(input_wires)) * 2 + GATES_WIDTH)] for _ in
+                   range(total_io_logic_height * 2 - len(input_wires))]
+    """
+    Grid in 3x for laying out the components. Valid components:
+    - space: empty
+    - -,|,r,L,J,\,+,T,(,): wiring
+    - 1,0: consts
+    - &,~,!,w: gates (! means Not gate with offset)
+    """
+
+    wire_count = total_io_logic_height - len(input_wires)
+    """The total number of wires looping around"""
+
+    # draw inputs
+    for input_index in range(len(input_wires)):
+        wiring_grid[input_index][wire_count + GATES_WIDTH - 1] = "("
+
+    # draw gates
+    for logic_net_index, logic_net in enumerate(logic_nets):
+        if logic_net.op in ["&", "w"]:
+            wiring_grid[heights[logic_net]][wire_count] = logic_net.op
+        elif logic_net.op == "~":
+            wiring_grid[heights[logic_net]][wire_count] = "~" if logic_net_index % 2 == 0 else "!"
+        else:
+            _error(f"unsupported logic op {logic_net.op}")
+
+    # draw outputs
+    for output_net in output_nets:
+        wiring_grid[heights[output_net]][wire_count] = ")"
+
+    # draw wires looping around
+    for wire_index in range(wire_count):
+        # horizontal segment going into left side of gate
+        for i in range(wire_index):
+            wiring_grid[total_io_logic_height - wire_index - 1][wire_count - i - 1] = "-"
+        # corner
+        wiring_grid[total_io_logic_height - wire_index - 1][wire_count - wire_index - 1] = "r"
+        # vertical segment connecting left wire to bottom wire
+        for i in range(wire_index * 2):
+            wiring_grid[total_io_logic_height - wire_index + i][wire_count - wire_index - 1] = "|"
+        # corner
+        wiring_grid[total_io_logic_height + wire_index][wire_count - wire_index - 1] = "L"
+        # horizontal segment running along the bottom
+        for i in range(wire_index * 2 + GATES_WIDTH):
+            wiring_grid[total_io_logic_height + wire_index][wire_count - wire_index + i] = "-"
+        # corner
+        wiring_grid[total_io_logic_height + wire_index][wire_count + GATES_WIDTH + wire_index] = "J"
+        # vertical segment on bottom right of gate area, connecting bottom wire upwards until extension of bottom side of gate area
+        for i in range(wire_index):
+            wiring_grid[total_io_logic_height + i][wire_count + GATES_WIDTH + wire_index] = "|"
+
+    # draw wires specifying src-sink connections
+    # and consts
+    for sink, srcs in net_src_dict.items():
+        column_of_first_src = wire_count * 2 + GATES_WIDTH + len(input_wires) - heights[sink] - 1
+        for src_index, src in enumerate(srcs):
+            if isinstance(src, pyrtl.Const):
+                wiring_grid[total_io_logic_height - 1][column_of_first_src - src_index] = "1" if src.val == 1 else "0"
+            else:
+                src_row = heights[src] + (1 if isinstance(src, pyrtl.LogicNet) and src.op == "&" else 0)
+                sink_col = column_of_first_src - src_index
+                # horizontal segment coming from right side of gates
+                for col in range(wire_count + GATES_WIDTH, sink_col):
+                    match wiring_grid[src_row][col]:
+                        case " ":
+                            wiring_grid[src_row][col] = "-"
+                        case "|":
+                            wiring_grid[src_row][col] = "+"
+                        case "\\":
+                            wiring_grid[src_row][col] = "T"
+                # corner
+                match wiring_grid[src_row][sink_col]:
+                    case " ":
+                        wiring_grid[src_row][sink_col] = "\\"
+                    case "-":
+                        wiring_grid[src_row][sink_col] = "T"
+                # vertical segment connecting input/gate output to vertical wire below gates
+                for row in range(src_row + 1, total_io_logic_height):
+                    match wiring_grid[row][sink_col]:
+                        case " ":
+                            wiring_grid[row][sink_col] = "|"
+                        case "-":
+                            wiring_grid[row][sink_col] = "+"
+
+    # add padding around wiring_grid
+    wiring_grid = ([" " for _ in range(len(wiring_grid[0]) + 2)]
+                   + [[" "] + grid_row + [" "] for grid_row in wiring_grid]
+                   + [" " for _ in range(len(wiring_grid[0]) + 2)])
+
     actual_grid = [[" " for _ in range(total_grid_width * 3)] for _ in range(total_grid_height * 3)]
     for row_i, row in enumerate(wiring_grid):
         for col_i, cell in enumerate(row):

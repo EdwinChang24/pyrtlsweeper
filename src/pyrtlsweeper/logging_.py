@@ -9,3 +9,6 @@ def set_logging(logging: bool):
 def _log(msg: str):
     if pyrtlsweeper_logging:
         print(f"[pyrtlsweeper] {msg}")
+
+def _error(msg: str):
+    raise Exception(f"[pyrtlsweeper] error: {msg}")

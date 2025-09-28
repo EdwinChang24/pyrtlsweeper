@@ -110,7 +110,7 @@ class _Split(_CircuitComponent):
 
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
-        board[r][c + 2] = "H"
+        board[r][c + 1] = "H"
         board[r + 1][c] = "H"
 
 
@@ -189,9 +189,7 @@ class _Const1(_CircuitComponent):
 
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
-        board[r][c] = "H"
-        board[r + 2][c + 2] = "H"
-        board[r + 1][c + 2] = "O"
+        board[r + 2][c + 1] = "O"
 
 
 class _Const0(_CircuitComponent):
@@ -199,6 +197,6 @@ class _Const0(_CircuitComponent):
 
     def place(self, board: list[list[str]], coords: tuple[int, int]):
         r, c = coords
-        board[r][c] = "H"
-        board[r + 1][c] = "O"
+        board[r][c + 1] = "O"
+        board[r + 1][c + 1] = "H"
         board[r + 2][c + 2] = "H"
