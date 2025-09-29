@@ -97,7 +97,7 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
     """
 
     wire_count = total_io_logic_height - len(input_wires)
-    """The total number of wires looping around"""
+    """The total number of wires looping around, also the horizontal index of the start of the io/logic area"""
 
     _log("drawing inputs")
     for input_index in range(len(input_wires)):
@@ -114,7 +114,9 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
 
     _log("drawing outputs")
     for output_net in output_nets:
-        wiring_grid[heights[output_net]][wire_count] = ")"
+        wiring_grid[heights[output_net]][wire_count] = "-"
+        wiring_grid[heights[output_net]][wire_count + 1] = "-"
+        wiring_grid[heights[output_net]][wire_count + 2] = ")"
 
     _log("drawing looping wires")
     for wire_index in range(wire_count):
@@ -170,9 +172,15 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
                             wiring_grid[row][sink_col] = "+"
 
     # add padding around wiring_grid
-    wiring_grid = ([" " for _ in range(len(wiring_grid[0]) + 2)]
+    wiring_grid = ([[" " for _ in range(len(wiring_grid[0]) + 2)]]
                    + [[" "] + grid_row + [" "] for grid_row in wiring_grid]
-                   + [" " for _ in range(len(wiring_grid[0]) + 2)])
+                   + [[" " for _ in range(len(wiring_grid[0]) + 2)]])
+
+    print("start wiring_grid")
+    for row in wiring_grid:
+        print("".join(row))
+    print("end wiring_grid")
+
 
     _log("converting to actual grid")
 
