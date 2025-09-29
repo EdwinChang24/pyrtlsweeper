@@ -176,12 +176,6 @@ def and_not_loop(file: TextIOWrapper, block: pyrtl.Block = pyrtl.working_block()
                    + [[" "] + grid_row + [" "] for grid_row in wiring_grid]
                    + [[" " for _ in range(len(wiring_grid[0]) + 2)]])
 
-    print("start wiring_grid")
-    for row in wiring_grid:
-        print("".join(row))
-    print("end wiring_grid")
-
-
     _log("converting to actual grid")
 
     actual_grid = [[" " for _ in range(len(wiring_grid[0]) * 3)] for _ in range(len(wiring_grid) * 3)]
