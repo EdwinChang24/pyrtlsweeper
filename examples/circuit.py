@@ -7,7 +7,7 @@ b = pyrtl.Input(bitwidth=1, name="b")
 c = pyrtl.Output(bitwidth=1, name="c")
 # d = pyrtl.Output(bitwidth=1, name="d")
 
-c <<= a + b
+c <<= a ^ b
 # d <<= a | b
 
 if __name__ == "__main__":
