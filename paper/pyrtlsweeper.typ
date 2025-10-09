@@ -303,6 +303,8 @@ The most complex component needed is an AND gate. In theory we could use OR/NAND
 
 This takes up a $4 times 3$ of $3 times 3$ squares. I'm not going to get into how this exactly works, because I don't entirely understand it either. An important thing, though, is that the hidden cell at the far top right may look like an unnecessary dead end, but it's actually necessary to keep the number of mines constant, just like in the NOT gate.
 
+The prior AND gate design has 3-cell spacing between the two inputs, which fits nicely if we want the entire circuit to have spacing between wires and gates. In a further revision, I removed the 3-cell spacing and compressed the design:
+
 #minesweeper-board(
   "00000000000000000000",
   "01111111222233321000",
@@ -315,6 +317,8 @@ This takes up a $4 times 3$ of $3 times 3$ squares. I'm not going to get into ho
   "01111121101121101110",
   "00000000000000000000",
 )
+
+This is a compact, working AND gate design for a board with tightly packed wires and gates.
 
 = Board Layout
 
@@ -366,15 +370,19 @@ The easiest way, to my knowledge, to project a directed graph onto a board like 
   mark((0, -9), 0deg, "straight")
 }))
 
-It's not pictured here, but wires can also split off in the top right if multiple gates take one wire as an argument.
+As shown, wires can split off in the top right if multiple gates take a particular wire as an argument.
 
-On the actual Minesweeper board, I add $3$-square padding between the wires and gates, which are sized with $3 times 3$ units, to make things easier.
+On the actual Minesweeper board, I originally added $3$-cell spacing between the wires and gates, which are sized with $3 times 3$ units, to make things easier. In a later revision, I compressed the wire and gate designs to tightly pack them without spacing.
 
 == Putting everything together
 
 Using everything discussed before, I wrote a Python script to generate Minesweeper boards from PyRTL circuits. Here's what ```py c <<= a | b``` looks like:
 
-#board-image("images/or-circuit.png")
+#board-image("images/or-circuit-old.png")
+
+This was with spacing between the wires and gates, which made the boards simpler to build. I later removed the spacing to optimize the board size. Here's what the same circuit looks like with no spacing:
+
+#board-image("images/or-circuit-new.png")
 
 A more complicated circuit, ```py c <<= ~(~a | ~b); d <<= a | b```:
 
