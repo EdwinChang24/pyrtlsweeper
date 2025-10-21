@@ -73,6 +73,8 @@
   "0000000*",
 )
 
+#pagebreak()
+
 #minesweeper-board(
   "00011100",
   "1111*210",
