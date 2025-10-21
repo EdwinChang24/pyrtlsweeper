@@ -5,15 +5,19 @@
 
 #set text(size: 48pt)
 
-#let imagewide(source) = align(center, image(source, width: 100%, height: auto))
+#set image(height: 100%, width: 100%, fit: "contain")
 
-PyRTLSweeper
+#place(center + horizon)[
+  #set text(size: 36pt)
 
-Edwin Chang
+  *PyRTLSweeper: Automated Transformation of Digital Circuits to Minesweeper Boards*
+
+  Edwin Chang
+]
 
 #pagebreak()
 
-#imagewide("assets/spring-quarter.png")
+#image("assets/spring-quarter.png")
 
 #pagebreak()
 
@@ -25,11 +29,11 @@ Edwin Chang
 
 #pagebreak()
 
-#image("assets/130-final-1.png")
+#image("assets/130-final-1.png", height: 100%, width: 160%, fit: "contain")
 
 #pagebreak()
 
-#image("assets/130-final-2.png")
+#image("assets/130-final-2.png", height: 100%, width: 160%, fit: "contain")
 
 #pagebreak()
 
@@ -205,7 +209,9 @@ Edwin Chang
 
 #pagebreak()
 
-0
+#place(center, dy: 48pt)[
+  0
+]
 
 #minesweeper-board(
   "00000000000000000000000000000000",
@@ -219,7 +225,9 @@ Edwin Chang
 
 #pagebreak()
 
-1
+#place(center, dy: 48pt)[
+  1
+]
 
 #minesweeper-board(
   "00000000000000000000000000000000",
@@ -233,7 +241,9 @@ Edwin Chang
 
 #pagebreak()
 
-0
+#place(center, dy: 48pt)[
+  0
+]
 
 #minesweeper-board(
   "00000000000000000000000000000000",
@@ -247,7 +257,9 @@ Edwin Chang
 
 #pagebreak()
 
-1
+#place(center, dy: 48pt)[
+  1
+]
 
 #minesweeper-board(
   "00000000000000000000000000000000",
@@ -503,7 +515,7 @@ Edwin Chang
 
 #pagebreak()
 
-#imagewide("assets/winter-quarter.png")
+#image("assets/winter-quarter.png")
 
 #pagebreak()
 
@@ -511,7 +523,7 @@ Edwin Chang
 
 #pagebreak()
 
-#[
+#place(center + horizon)[
   #set text(size: 24pt)
 
   ```py
@@ -539,55 +551,53 @@ Edwin Chang
 
 #pagebreak()
 
-#stack(
-  dir: ltr,
-  image("assets/pyrtl.png"),
-  $=>$,
+#grid(
+  columns: (1fr, 1fr),
+  image("assets/pyrtl.png"), place(center + horizon, $=>$),
 )
 
 #pagebreak()
 
-#stack(
-  dir: ltr,
-  image("assets/pyrtl.png"),
-  $=>$,
-  image("assets/minesweeper-logo.png"),
+#grid(
+  columns: (1fr, 1fr, 1fr),
+  image("assets/pyrtl.png"), place(center + horizon, $=>$), image("assets/minesweeper-logo.png"),
 )
 
 #pagebreak()
 
-#stack(
-  dir: ltr,
-  stack(dir: ttb, image("assets/not-gate-symbol.png"), [NOT]),
-  stack(dir: ttb, image("assets/and-gate-symbol.png"), [AND]),
+#grid(
+  columns: (1fr, 1fr),
+  rows: (1fr, 1fr),
+  image("assets/not-gate-symbol.png"), image("assets/and-gate-symbol.png"),
+  place(center + horizon)[NOT], place(center + horizon)[AND],
 )
 
 #pagebreak()
 
-#stack(
-  dir: ltr,
-  image("assets/not-gate-minecraft.png"),
-  [NOT],
+#grid(
+  columns: (1fr, 1fr),
+  image("assets/not-gate-minecraft.png"), place(center + horizon)[NOT],
 )
 
 #pagebreak()
 
-#stack(dir: ltr, [AND], image("assets/and-gate-minecraft.png"))
-
-#pagebreak()
-
-#stack(
-  dir: ltr,
-  [Before conversion],
-  image("assets/pyrtl-circuit-unsynthed.png"),
+#grid(
+  columns: (1fr, 1fr),
+  place(center + horizon)[AND], image("assets/and-gate-minecraft.png"),
 )
 
 #pagebreak()
 
-#stack(
-  dir: ltr,
-  [After conversion],
-  image("assets/pyrtl-circuit-synthed.png"),
+#grid(
+  columns: (1fr, 1fr),
+  place(center + horizon)[Before conversion], image("assets/pyrtl-circuit-unsynthed.png"),
+)
+
+#pagebreak()
+
+#grid(
+  columns: (1fr, 1fr),
+  image("assets/pyrtl-circuit-synthed.png"), place(center + horizon)[After conversion],
 )
 
 #pagebreak()
@@ -652,16 +662,21 @@ Edwin Chang
 
 #pagebreak()
 
-#stack(dir: ltr, image("assets/pyrtl-circuit-simple.png"), $=>$, minesweeper-board(
-  "000000000",
-  "000000000",
-  "000000000",
-  "000000000",
-  "000000000",
-  "000000000",
-  "000000000",
-  "000000000",
-))
+#grid(
+  columns: (1fr, 1fr, 1fr),
+  image("assets/pyrtl-circuit-simple.png"),
+  place(center + horizon, $=>$),
+  minesweeper-board(
+    "000000000",
+    "000000000",
+    "000000000",
+    "000000000",
+    "000000000",
+    "000000000",
+    "000000000",
+    "000000000",
+  ),
+)
 
 #pagebreak()
 
@@ -728,12 +743,15 @@ Edwin Chang
 
 #pagebreak()
 
-#stack(dir: ltr, image("assets/python-script-old-1.png"), image("assets/python-script-old-2.png"))
+#grid(
+  columns: (1fr, 1fr),
+  image("assets/python-script-old-1.png"), image("assets/python-script-old-2.png"),
+)
 
 #pagebreak()
 
-#[
-  #set text(size: 24pt)
+#place(center + horizon)[
+  #set text(size: 36pt)
   ```py
   import pyrtl
 
@@ -749,25 +767,23 @@ Edwin Chang
 
 #pagebreak()
 
-#stack(
-  dir: ltr,
-  [OR],
-  image("assets/circuit-or-old.png"),
+#grid(
+  columns: (1fr, 1fr),
+  place(center + horizon)[OR], image("assets/circuit-or-old.png"),
 )
 
 #pagebreak()
 
 
-#stack(
-  dir: ltr,
-  [XOR],
-  image("assets/circuit-xor-old.png"),
+#grid(
+  columns: (1fr, 1fr),
+  image("assets/circuit-xor-old.png"), place(center + horizon)[XOR],
 )
 
 #pagebreak()
 
-#[
-  #set text(size: 24pt)
+#place(center + horizon)[
+  #set text(size: 28pt)
   ```py
       if net.op == '|':
           dest <<= ~(~arg(0) & ~arg(1))
@@ -826,11 +842,10 @@ Edwin Chang
 
 #pagebreak()
 
-June 2025
-
 #let days = range(1, 31).map(it => [#it])
 
-#[
+#place(center + horizon)[
+  June 2025
   #set table.cell(align: center)
   #table(
     columns: 7,
@@ -854,11 +869,11 @@ June 2025
 
 #pagebreak()
 
-#image("assets/georgia-tech.jpg")
+#image("assets/aquarium.jpg")
 
 #pagebreak()
 
-#image("assets/aquarium.jpg")
+#image("assets/georgia-tech.jpg")
 
 #pagebreak()
 
@@ -950,22 +965,31 @@ June 2025
 
 #pagebreak()
 
-#stack(dir: ltr, image("assets/python-script-new-1.png"), image("assets/python-script-new-2.png"))
+#grid(
+  columns: (1fr, 1fr),
+  image("assets/python-script-new-1.png"), image("assets/python-script-new-2.png"),
+)
 
 #pagebreak()
 
-#stack(dir: ltr, [OR], image("assets/circuit-or-new.png"))
+#grid(
+  columns: (1fr, 1fr),
+  place(center + horizon)[OR], image("assets/circuit-or-new.png"),
+)
 
 #pagebreak()
 
-#stack(dir: ltr, [XOR], image("assets/circuit-xor-new.png"))
+#grid(
+  columns: (1fr, 1fr),
+  image("assets/circuit-xor-new.png"), place(center + horizon)[XOR],
+)
 
 #pagebreak()
 
-#stack(
-  dir: ltr,
-  [
-    #set text(size: 24pt)
+#grid(
+  columns: (1fr, 1fr),
+  place(center + horizon)[
+    #set text(size: 36pt)
     ```py
     c <<= ~(~a | ~b)
     d <<= a | b
@@ -976,42 +1000,57 @@ June 2025
 
 #pagebreak()
 
-Not implemented
+#pad(48pt)[
+  *Not implemented*
+]
 
 #pagebreak()
 
-Not implemented
+#pad(48pt)[
+  *Not implemented*
 
-- Registers
-- Memory
-
-#pagebreak()
-
-Real-world applications
+  - Registers
+  - Memory
+]
 
 #pagebreak()
 
-#let thanks-content = ([Thanks], [- Zach Sisco], [- Kirby703], [- Authors of previous papers], [- Everyone in CCS])
+#pad(48pt)[
+  *Real-world applications*
+]
+
+#pagebreak()
+
+#let thanks-content = ([*Thanks*], [- Zach Sisco], [- Kirby703], [- Authors of previous papers], [- Everyone in CCS])
 
 #for i in range(thanks-content.len()) {
-  for j in range(i + 1) {
-    thanks-content.at(j)
-  }
+  pad(48pt)[
+    #for j in range(i + 1) {
+      thanks-content.at(j)
+    }
+  ]
   pagebreak()
 }
 
-Thanks for listening!
+#place(center + horizon)[
+  Thanks for listening!
+]
 
 #pagebreak()
 
-Learn more
+#place(center + horizon)[
+  Learn more
 
-QR CODE
+  QR CODE
+]
 
 #pagebreak()
 
-Learn more
+#place(center + horizon)[
 
-QR CODE
+  Learn more
 
-Q&A!
+  QR CODE
+
+  Q&A!
+]

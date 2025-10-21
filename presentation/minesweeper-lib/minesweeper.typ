@@ -1,12 +1,12 @@
 #import "@preview/cetz:0.4.2"
 
-#let minesweeper-board(scale: 50%, padding-x: 0pt, padding-y: 8pt, overlay: () => {}, ..board) = {
+#let minesweeper-board(padding-x: 16pt, padding-y: 16pt, overlay: () => {}, ..board) = {
   let border-color = rgb("#757575")
   let board-width = calc.max(..board.pos()).len()
   let board-height = board.pos().len()
-  pad(x: padding-x, y: padding-y, layout(size => {
+  place(center + horizon, pad(x: padding-x, y: padding-y, layout(size => {
     cetz.canvas(
-      length: size.width * scale / board-width,
+      length: calc.min(size.width / board-width, size.height / board-height),
       background: border-color,
       stroke: 3pt + border-color,
       {
@@ -24,5 +24,5 @@
         overlay()
       },
     )
-  }))
+  })))
 }
