@@ -3,7 +3,7 @@ from io import TextIOWrapper
 
 import pyrtl
 
-from and_not_loop.components import _Crossover, _Split, _WireHorizontal, \
+from pyrtlsweeper.and_not_loop.components import _Crossover, _Split, _WireHorizontal, \
     _WireVertical, _TurnLeftDown, _TurnLeftUp, _TurnRightUp, _TurnRightDown, _Const0, _Const1, _CapLeft, _CapRight, \
     _CircuitComponent, _AndGate, _NotGate, _NopGate
 from pyrtlsweeper.logging_ import _log, _error
