@@ -1,0 +1,16 @@
+#import "minesweeper-lib/minesweeper.typ": minesweeper-board
+
+#set page(width: auto, height: auto, margin: 0in)
+
+#minesweeper-board(
+  "00000000000000000000",
+  "01111111222233321000",
+  "02F32F33FF3FFFFF1000",
+  "03FHH4FF5H5H6FH31000",
+  "03F6FH4HF5FF5HH32110",
+  "03F6FH3HFHFFF3FF4F20",
+  "03FHH4F4HHFH5H4HHF30",
+  "02F32F3F223F3F213F20",
+  "01111121101121101110",
+  "00000000000000000000",
+)
