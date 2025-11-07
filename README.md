@@ -8,18 +8,19 @@
 </p>
 
 **Check out the
-paper: [PyRTLSweeper: An attempt at automated transpilation of digital circuits to Minesweeper boards](https://edwinchang.dev/files/pyrtlsweeper.pdf)**
+paper: [PyRTLSweeper: Automated Transformation of
+Digital Circuits to Minesweeper Boards](https://edwinchang.dev/pyrtlsweeper/paper.pdf)**
+
+**Also check out [the poster](https://edwinchang.dev/pyrtlsweeper/poster.pdf).**
 
 PyRTLSweeper is a Python package that takes a circuit written with [PyRTL](https://ucsbarchlab.github.io/PyRTL/) and
 produces a Minesweeper board readable by [JSMinesweeper](https://davidnhill.github.io/JSMinesweeper/) that represents
 the circuit. The player can designate input cells to be flagged or not flagged, and some output cells are determined to
 have a mine or not.
 
-PyRTLSweeper currently does not support registers and memories due to the complexity of state preservation, and does not
-work on all circuits. An XOR circuit in particular seems to produce incorrect results. If you have a solution to either
-of these issues, please reach out to me.
+PyRTLSweeper currently does not support registers and memories due to the complexity of state preservation.
 
-To get started with PyRTLSweeper, try editing and running [the example](./examples/circuit.py).
+To get started with PyRTLSweeper, try editing and running [the example](./examples/circuit.py) with [uv](https://docs.astral.sh/uv/).
 
 ## License
 
