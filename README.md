@@ -7,11 +7,9 @@
     </a>
 </p>
 
-**Check out the
-paper: [PyRTLSweeper: Automated Transformation of
-Digital Circuits to Minesweeper Boards](https://edwinchang.dev/pyrtlsweeper/paper.pdf)**
+**Listen to the talk: [PyRTLSweeper: Automated Transformation of Digital Circuits to Minesweeper Boards](https://youtu.be/34RXtKhsOSs)**
 
-**Also check out [the poster](https://edwinchang.dev/pyrtlsweeper/poster.pdf).**
+**Also check out [the paper](https://edwinchang.dev/pyrtlsweeper/paper.pdf) and [the poster](https://edwinchang.dev/pyrtlsweeper/poster.pdf).**
 
 PyRTLSweeper is a Python package that takes a circuit written with [PyRTL](https://ucsbarchlab.github.io/PyRTL/) and
 produces a Minesweeper board readable by [JSMinesweeper](https://davidnhill.github.io/JSMinesweeper/) that represents
