@@ -44,7 +44,7 @@ uv run ./examples/circuit.py
 
 This will create a file called `circuit.mine`.
 
-Now open [JSMinesweeper](https://davidnhill.github.io/JSMinesweeper/), click `Switch to Analyzer` at the top left, and drag `circuit.mine` into the window. Then give it a couple seconds and you should see the Minesweeper board representing the circuit.
+Now open [JSMinesweeper](https://davidnhill.github.io/JSMinesweeper/), click `Switch to Analyser` at the top left, and drag `circuit.mine` into the window. Then give it a couple seconds and you should see the Minesweeper board representing the circuit.
 
 The two wires at the top center are the inputs. Right click to place flags on them, and click `Analyse` to see the outputs in the two wires at the center. A flag on the left side of a hidden cell pair is `0`, and a flag on the right side is `1`.
 
