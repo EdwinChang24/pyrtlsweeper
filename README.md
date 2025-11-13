@@ -30,7 +30,7 @@ produces this Minesweeper board:
 
 ![A large and complex Minesweeper board](./paper/images/or-circuit-new.png)
 
-The inputs are the two wires at the top center, and the output is the wires at the center.
+The inputs are the two wires at the top center, and the output is the wire at the center.
 
 There is another example circuit in [`examples/circuit.py`](./examples/circuit.py) which you can test for yourself.
 
