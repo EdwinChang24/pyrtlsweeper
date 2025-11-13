@@ -50,7 +50,8 @@ The two wires at the top center are the inputs. Right click to place flags on th
 
 Try editing the example and re-running it to see what happens! Just don't make it too big or your browser will not like you.
 
-> [!NOTE] PyRTLSweeper currently does not support registers and memories due to the complexity of state preservation.
+> [!NOTE]
+> PyRTLSweeper currently does not support registers and memories due to the complexity of state preservation.
 
 ## License
 
